@@ -1,43 +1,71 @@
 ---
 name: chess-tournament-analyzer
-description: Analizuoja šachmatų kompozicijų sprendimo varžybų (įskaitant ISC) rezultatus, apskaičiuoja statistiką ir reitingu pagrįstą Z rodiklį, pažymi neįprastus pasirodymus ir rengia audituojamą ataskaitą pagal Arvydo Mockaus nustatytus peržiūros kriterijus. Naudoti gavus rezultatų lenteles ir, Z vertinimui, tinkamus istorinius arba modelio duomenis.
+description: Perskaito šachmatų kompozicijų sprendimo varžybų rezultatus (XLSX/CSV), atkuria Arvydo Mockaus Excel empirinį Δ=Rperf−Rinitial ir Z=(Δ−μΔ)/σΔ modelį, lygina su jautrumo analize, spalviniais žymėjimais, ISC atrankos kriterijais ir rengia audituojamą išvadų ataskaitą. Naudoti ISC, WCSC, ECSC, WCCC Open, ECSC Open bei nacionalinių varžybų statistinei peržiūrai.
 ---
 
 # Chess Tournament Analyzer
 
-## Užduotis
-Analizuok šachmatų kompozicijų sprendimo varžybas. Atskirk faktinius rezultatus, statistines anomalijas ir procedūrinius sprendimus. Nekaltink dalyvio nesąžiningumu vien iš statistikos.
+## Paskirtis ir statusas
+Tai **vartotojo „Analize ISC.xlsx“ (58 lapų) empirinio statistinės atrankos modelio** įgūdis, ne savarankiška kaltės nustatymo sistema ar oficialios WFCC procedūros patvirtinimas. Visada atskirk **istorinį Excel rezultatą**, **pataisytą / jautrumo rezultatą**, **kitus įrodymus** ir **įgalioto asmens procedūrinį sprendimą**.
 
-## 1. Duomenų gavimas
-- Priimk XLSX, CSV, PDF, HTML, nuotraukas ar lenteles; naudok prieinamus failų skaitymo įrankius. Niekada nespėliok neįskaitomų reikšmių.
-- Išskirk renginį, datą, vietą, kategoriją, rangą, dalyvį, federaciją, pradinį reitingą (ir jo datą), turų ir uždavinių balus, galimą maksimumą, bendrą balų sumą, laiką, sprendimo lapus, vietinius teisėjus ir rezultato statusą (kai yra).
-- Patikrink balų sudėtį, pasikartojimus, neatitikimus, trūkstamas reikšmes, skirtingas kategorijas ir maksimalių balų skirtumus. Neišvesk reitingo, jei jo nėra.
-- Jei keli vietiniai ISC turnyrai: aiškiai nurodyk, kuri palyginamoji grupė naudota, ir ar taisyklės bei uždaviniai tikrai vienodi.
+Prieš analizuodamas:
+1. Perskaityk \`references/workbook-model.md\` – tikslūs lapų tipai, stulpeliai, formulės ir spalvos.
+2. Perskaityk \`references/statistical-review.md\` – interpretavimas, Z/Δ slenksčiai, ISC darbinė atranka.
+3. Jei vartotojas pateikia Excel, naudok \`scripts/analyze.py\` su originaliu failu; rezultatus tikrink pagal originalias langelių formules ir cache.
+4. Rengdamas galutinę ataskaitą vadovaukis \`references/report-template.md\`.
 
-## 2. Aprašomoji statistika
-- Kiekvienai palyginamai grupei pateik N, vidurkį, medianą, minimumą, maksimumą, standartinį nuokrypį (nurodant populiacijos ar imties apibrėžimą), kvartilius ir balų pasiskirstymą; prireikus procentą nuo maksimalių balų ir vietą.
-- Dalyviui pateik balus, procentą nuo maksimumo, reitingą, vietą, nuokrypį nuo grupės vidurkio; reitingo pokytį pateik tik kai jis apskaičiuojamas pagal pagrįstą oficialią formulę ir turimus duomenis.
-- Netapatink žalių balų Z rodiklio su reitingu pagrįstu rezultatų netikėtumo Z rodikliu.
+## Darbo tvarka
 
-## 3. Statistinis sąžiningumo vertinimas
-- Prieš skaičiuodamas Z perskaityk `references/statistical-review.md`.
-- PIRMINIS modelis: Z=(stebimas pasirodymas − tikėtinas pasirodymas)/modelio prognozės standartinis nuokrypis. Palyginamasis vienetas gali būti pasirodymo reitingas arba balai, bet tik jei tikėtina reikšmė ir dispersija pagrįstos tam pačiam vienetui; nemaišyk jų.
-- Nepakanka turėti vien dalyvių reitingus ir galutinius balus patikimam Z. Modelio prognozę ir dispersiją reikia pagrįsti kalibraciniais istoriniais rezultatais, patikimu oficialiu modeliu arba aiškiai nurodyta vartotojo metodika. Jei jų nėra, rašyk „Z neapskaičiuojamas patikimai“ ir, tik kaip alternatyvą, pateik grupės balų standartizaciją kitu pavadinimu.
-- Kartu pateik metodą, kontrolinę imtį, N, laikotarpį, panaudotus parametrus, šaltinius, trūkstamus duomenis, jautrumo analizę. Nekonstruok statistinio tikslumo iš prielaidų.
-- Peržiūros atrankai naudok vartotojo darbo kriterijus iš nuorodos; jie **nėra automatinis kaltės, diskvalifikacijos ar oficialios WFCC sankcijos pagrindas**.
+### 1. Pradinių rezultatų patikra
+- Atpažink varžybų seriją, metus, datą, varžybų tipą (2 raundai / 6 raundai / Open), kategoriją, vietą ir grupę; atskirk ISC vietinį turnyrą nuo visos kategorijos.
+- Perskaityk vietą, dalyvio vardą, federaciją, oficialų prieš turnyrą turėtą reitingą, pasirodymo reitingą, taškus, laiko duomenis, kai jie pateikti, ir uždavinių balus. Duomenis iš nuotraukų/PDF patikrink ne spėliodamas.
+- Patikrink perskaičiavimus, balų sumas, skirtingus maksimumus, pasikartojimus, neišsamius įrašus, lietuviškus / europinius dešimtainius skirtukus ir išsaugotas Excel formulių rezultatų reikšmes.
+- **Pasirodymo reitingas paprastai jau įrašytas šaltinyje.** Jo nespėliok iš taškų be oficialios reitingavimo formulės ir atitinkamų duomenų.
+- Atskirai pažymėk trūkstamą pradinį reitingą, laiko duomenis, pirmą reitingą, naujus / nepilnamečius žaidėjus.
 
-## 4. Papildoma ekspertinė patikra
-Kai turimi sprendimo lapai, uždavinių tekstai, atsakymai ar vietinės varžybų aplinkybės, įvertink jų patikrinamumą: gynybų pilnumą, grėsmes, variantus, neįprastus praleidimus, vertinimo taisymus, laiką, lapų kilmę. Atskirai žymėk patvirtintą faktą, indikaciją ir nežinomybę. Neprimetinėk atsakymo iš sprendimų teisingumo be tikrinimo.
+### 2. Atkurk originalų Excel metodą
+Pagal šaltinį kiekvienam i apskaičiuok:
+- \`Δ_i = Rperf_i − Rinitial_i\` (originaliuose Excel lapuose kartais neradus pradinio reitingo formulė įrašo **0**, ne realų skirtumą).
+- \`μΔ = AVERAGE(Δ)\` per **tiksliame lape nurodytą diapazoną**.
+- \`σΔ = STDEV.P(Δ)\`, naudok populiacijos SD (ne STDEV.S).
+- \`Z_i = (Δ_i − μΔ) / σΔ\`.
+- \`p_i = 1 − NORM.S.DIST(Z_i, TRUE)\` – vienpusės standartinio normaliojo skirstinio uodegos modelinis dydis.
+- \`trials_i = 1 / p_i\`; nevadink jo patikimu realių turnyrų skaičiumi iki anomalijos.
+- Išsaugok abiejų diapazonų ribas; **jų netaisyk nepastebimai**, jei Excel turi klaidą ar neatitikimą.
 
-## 5. Ataskaita
-Pateik lietuviškai (ar vartotojo prašyta kalba):
-1. Renginio, šaltinių ir duomenų kokybės santrauką.
-2. Dalyvių ir grupių statistiką.
-3. Anomalijų suvestinę su modelio formule, įverčiais, slenksčiais ir priežastimis, kodėl pažymėta arba nepažymėta.
-4. Alternatyvių prielaidų / jautrumo analizę.
-5. Papildomų įrodymų ir procedūrinių neaiškumų sąrašą.
-6. Aiškią išvadą: „nepažymėta“, „reikia papildomos peržiūros“, „rekomenduojama perduoti centriniam kontrolieriui“ arba „nepakanka duomenų“. Nenaudok statistikos kaip galutinio nuosprendžio.
-7. Jei prašoma, pateik atskirą struktūruotą CSV/XLSX priedą su skaičiavimų audito stulpeliais.
+### 3. Lygiagreti jautrumo analizė
+- Pakartok μΔ, σΔ ir Z **tik turintiems pradinį reitingą** (trūkstamas ≠ 0). Pateik abiejų variantų N, parametrus ir pasikeitusius atrankos lygius.
+- Palygink originalų Excel cache su naujai apskaičiuotais rezultatais; pažymėk nesutampančias formules / istorines suvestines.
+- Jei pagrįsta, atskirai analizuok alternatyvias pradinio reitingo prielaidas, pvz., 1700 ar 2000, bet **niekada neduok sugalvoto tikslumo**. Pakeitus vieno dalyvio reitingą parodyk, ar perskaičiuotas visas grupės μΔ ir σΔ.
+- Maža imtis, labai nevienalytė grupė, išskirtys, trūkstami reitingai, priklausomi dalyviai ir daugybiniai testai riboja normaliojo skirstinio tikimybių interpretaciją.
 
-## 6. Kokybės kontrolė
-Perskaičiuok sumas ir ribinius atvejus; patikrink Z ženklą bei vienetus; pažymėk mažą N, atrankos šališkumą, nevienodas sąlygas, neaiškią reitingo istoriją ir daugybinių palyginimų riziką. Nedaryk išvadų iš nesamų duomenų. Neperrašyk kitų įgūdžių ar repo šaknies.
+### 4. Spalvinis žymėjimas ir įtartinų atvejų atranka
+- Pritaikyk faktinę darbo knygos legendą ir conditional formatting iš \`references/workbook-model.md\`.
+- Atskirai atvaizduok **Δ kategoriją**, **Z kategoriją**, **p kategoriją** ir **darbinės ISC peržiūros** keturių kriterijų atitiktį.
+- Kriterijai pagal vartotojo projektą: preliminarus Z≥3; reikšmingas Z≥3,5; Δ≥450 Elo; vieta≤20; palyginama grupė N≥14. Griežta atranka: paskutiniai **keturi** vienu metu; nenurodyto grupės dydžio nelaikyk tenkinamu.
+- Istoriniai Excel filtrai \`>300\` ar \`>400\` **nėra tas pats**, kas naujasis Δ≥450 slenkstis.
+- Atmintinai neperrašinėk ar nenormalizuok rankinio suvestinio lapo, jeigu jis skiriasi nuo šaltinio metų lapo: prioritetas – patikrinta šaltinio formulė / naujas skaičiavimas su nurodyta versija.
+
+### 5. Papildomi įrodymai ir kontekstas
+- Jei pateikti originalūs sprendimo lapai, vertink sprendinių pilnumą, variantų / grėsmių nurodymą, laiko apribojimą, teisėjų pataisas, rezultato kilmę ir teisėjavimo sąlygas.
+- Statistinis išskirtinumas nesuteikia pagrindo tvirtinti sukčiavimą ar diskvalifikuoti. Visada atskirk faktą, požymį, paaiškinimą, nepatikrintą teiginį ir siūlomą patikrą.
+- Jei aktualu, peržiūrėk galiojančias oficialias ISC/WFCC taisykles atskirai nuo vartotojo siūlomų slenksčių.
+
+### 6. Ataskaita
+Pateik: (a) renginio identifikavimą, datą ir šaltinio statusą, (b) imtį ir trūkstamus reitingus, (c) tikslią Excel formulę, μΔ, σΔ ir palyginimo vienetus, (d) pažymėtus dalyvius su Δ/Z/p/1/p, (e) visų keturių atrankos požymių lentelę, (f) Excel-vs-rated-only palyginimą, (g) sprendimo lapų ir priežiūros kontekstą, (h) išvados kategoriją: „statistiškai įprastas“, „preliminari patikra“, „papildoma išsami peržiūra“ arba „nepakanka duomenų“.
+
+Ataskaitos statusas **nėra oficialus sprendimas**. Pridėk formulių ir šaltinių atsekamumą (lapas, diapazonas, modelio variantas).
+
+## Paleidimas
+
+\`\`\`bash
+python scripts/analyze.py "Analize ISC.xlsx" --sheet "ISC 2025" --output-dir reports
+python scripts/analyze.py "Analize ISC.xlsx" --all --output-dir reports
+python scripts/analyze.py results.csv --output-dir reports
+python -m unittest discover -s evals -v
+\`\`\`
+
+CSV alternatyva: \`name,rank,prior_rating,performance_rating,country,location,category\`.
+Rezultatas: kiekvieno lapo \`*-analysis.csv\` su dalyvių rodikliais ir \`*-summary.json\` su metodika bei įspėjimais. Skriptas skaito XLSX **išsaugotas reikšmes**, pats Excel formulių neperskaičiuoja; jei jos pasenusios, pirmiausia atnaujink darbaknygės skaičiavimą. Kiekvienos analizės pradžioje patikrink, ar visi įėjimo stulpeliai atpažinti.
+
+Neperkelk viso vartotojo turnyrų duomenų failo į viešą GitHub repozitoriją be aiškaus leidimo. Kitų įgūdžių nekeisk.
