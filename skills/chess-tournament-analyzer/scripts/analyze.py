@@ -298,6 +298,27 @@ def main():
         names = list(sheets) if args.all else [args.sheet or next(iter(sheets))]
         groups = [xlsx_group(name, sheets[name]) for name in names]
     result = [output(group, pathlib.Path(args.output_dir)) for group in groups]
+    if args.all and len(groups) > 1:
+        historical = []
+        for group in groups:
+            for r in group["records"]:
+                if r["z_historical"] is not None:
+                    historical.append({
+                        "sheet": group["name"], "row": r["row"], "rank": r["rank_text"],
+                        "name": r["name"], "country": r["country"],
+                        "prior_rating": r["prior_rating"],
+                        "performance_rating": r["performance_rating"],
+                        "delta": r["delta"], "z_historical": r["z_historical"],
+                        "z_rated_only": r["z_rated_only"], "p_upper_tail": r["p_upper_tail"],
+                        "four_flags": r["strict_four_flags"],
+                    })
+        historical.sort(key=lambda r: r["z_historical"], reverse=True)
+        with open(pathlib.Path(args.output_dir) / "historical-ranking.csv", "w",
+                  encoding="utf-8-sig", newline="") as f:
+            if historical:
+                writer = csv.DictWriter(f, fieldnames=list(historical[0]))
+                writer.writeheader()
+                writer.writerows(historical)
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
