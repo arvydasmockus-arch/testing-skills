@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chess Tournament Analyzer"
+  short_description: "Šachmatų sprendimo varžybų statistika, Z rodikliai ir ISC peržiūros ataskaitos"
+  default_prompt: "Išanalizuok pateiktus šachmatų kompozicijų sprendimo varžybų rezultatus pagal chess-tournament-analyzer įgūdį. Atskirai pažymėk duomenų trūkumus ir nepainiok statistinių signalų su įrodyta nesąžininga veikla."
